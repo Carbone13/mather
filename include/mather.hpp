@@ -4,6 +4,13 @@
 #define GL_SILENCE_DEPRECATION
 #include <GLFW/glfw3.h>
 
+#include <agg_pixfmt_rgb.h>
+#include <agg_pixfmt_rgba.h>
+#include <agg_renderer_base.h>
+
+typedef agg::pixfmt_rgb24 PixelFormat;
+typedef agg::renderer_base<PixelFormat> RendererBaseType;
+
 namespace mather
 {
     class Context
@@ -13,6 +20,11 @@ namespace mather
         int height;
 
         GLFWwindow *window{nullptr};
+
+        agg::rendering_buffer renderBuffer;
+        PixelFormat pixelFormat;
+        RendererBaseType renderer;
+        unsigned char *buffer;
 
         void createWindow(const char *name);
 
