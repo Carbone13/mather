@@ -2,13 +2,16 @@
 #define DRAWERS_HPP_
 
 #include <agg_color_rgba.h>
+#include <agg_conv_transform.h>
 #include <agg_pixfmt_rgba.h>
 #include <agg_renderer_base.h>
+#include <agg_trans_affine.h>
 
 typedef agg::rgba8 Color;
 
 typedef agg::pixfmt_rgba32 PixelFormat;
 typedef agg::renderer_base<PixelFormat> BaseRenderer;
+typedef agg::trans_affine TransformMatrix;
 
 #include <agg_rasterizer_scanline_aa.h>
 #include <agg_renderer_scanline.h>
@@ -24,12 +27,15 @@ class SolidDrawer
     Scanline scanline;
 
   public:
+    TransformMatrix centeringMatrix;
+
     explicit SolidDrawer(BaseRenderer &baseRenderer);
 
     template <class VertexSource> void draw(VertexSource &vs, Color color, bool autoClose = false)
     {
         rasterizer.reset();
-        rasterizer.add_path(vs);
+        agg::conv_transform<VertexSource> tVs{vs, centeringMatrix};
+        rasterizer.add_path(tVs);
         agg::render_scanlines_aa_solid(rasterizer, scanline, renderer, color);
     }
 };
@@ -48,6 +54,8 @@ class OutlineDrawer
     Profile profile;
 
   public:
+    TransformMatrix centeringMatrix;
+
     explicit OutlineDrawer(BaseRenderer &baseRenderer);
 
     template <class VertexSource>
@@ -55,7 +63,8 @@ class OutlineDrawer
     {
         profile.width(thickness);
         renderer.color(color);
-        rasterizer.add_path(vs);
+        agg::conv_transform<VertexSource> tVs{vs, centeringMatrix};
+        rasterizer.add_path(tVs);
         rasterizer.render(autoClose);
     }
 };

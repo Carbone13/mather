@@ -8,9 +8,8 @@
 #include <vector>
 
 #include <agg_math_stroke.h>
-#include <agg_trans_affine.h>
+
 typedef agg::rendering_buffer Buffer;
-typedef agg::trans_affine TransformMatrix;
 
 namespace mather
 {

@@ -20,6 +20,11 @@ namespace mather
         renderBuffer.attach(internalBuffer, width, height, width * PixelFormat::pix_width);
         pixelFormat.attach(renderBuffer);
         baseRenderer.attach(pixelFormat);
+
+        TransformMatrix centeringMatrix = agg::trans_affine_translation(width / 2.0f, height / 2.0f);
+
+        solidDrawer.centeringMatrix = centeringMatrix;
+        outlineDrawer.centeringMatrix = centeringMatrix;
     }
 
     void Context::setTransform(float xOffset, float yOffset, float rotation)
