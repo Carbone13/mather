@@ -48,10 +48,4 @@ class SimplePath
     bool m_close;
 };
 
-struct CmdVertex
-{
-    agg::path_commands_e cmd;
-    double x;
-    double y;
-};
 #endif //_PATH_HPP_

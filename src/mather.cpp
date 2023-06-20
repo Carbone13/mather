@@ -1,41 +1,49 @@
 #include "mather.hpp"
-#include "agg_conv_transform.h"
-#include "config.hpp"
+#include "path.hpp"
+
+#include <agg_conv_stroke.h>
+#include <agg_ellipse.h>
+#include <agg_rounded_rect.h>
 
 namespace mather
 {
-    Context::Context(int width, int height, const char *name)
+    Context::Context(int width, int height, const char *name) : outlineDrawer(baseRenderer), solidDrawer(baseRenderer)
     {
         this->width = width;
         this->height = height;
-        createWindow(name);
-    }
 
-    void Context::createWindow(const char *name)
-    {
         glfwInit();
         window = glfwCreateWindow(width, height, name, nullptr, nullptr);
         glfwMakeContextCurrent(window);
 
-        auto pixelSize = PixelFormat::pix_width;
-        buffer = new unsigned char[width * height * pixelSize];
-
-        renderBuffer.attach(buffer, width, height, width * pixelSize);
+        internalBuffer = new unsigned char[width * height * PixelFormat::pix_width];
+        renderBuffer.attach(internalBuffer, width, height, width * PixelFormat::pix_width);
         pixelFormat.attach(renderBuffer);
-        renderer.attach(pixelFormat);
-        ras.auto_close(false);
+        baseRenderer.attach(pixelFormat);
+    }
+
+    void Context::setTransform(float xOffset, float yOffset, float rotation)
+    {
+        matrix.reset();
+        matrix.rotate(rotation);
+        matrix.translate(xOffset, yOffset);
+    }
+
+    void Context::resetTransform()
+    {
+        matrix.reset();
     }
 
     void Context::beginFrame()
     {
         glClear(GL_COLOR_BUFFER_BIT);
-        renderer.clear(backgroundColor);
+        baseRenderer.clear(backgroundColor);
         matrix.reset();
     }
 
     void Context::endFrame()
     {
-        glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+        glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, internalBuffer);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -50,27 +58,17 @@ namespace mather
         glfwTerminate();
     }
 
-    template <class VertexSource> void Context::renderFilled(VertexSource &vs, Color color)
-    {
-        agg::conv_transform<VertexSource> transformedVs(vs, matrix);
+    /// ****
+    /// SOLID PRIMITIVES
+    /// ****
 
-        ras.reset();
-        ras.add_path(transformedVs);
-        agg::render_scanlines_aa_solid(ras, scanline, renderer, color);
-    }
-
-    void Context::drawLine(float x0, float y0, float x1, float y1, float t, LineCap cap, Color color)
+    void Context::line(float x0, float y0, float x1, float y1, float t, LineCap cap, Color color)
     {
         float p[] = {x0, y0, x1, y1};
-        SimplePath path(p, 4, false);
-        agg::conv_stroke<SimplePath> strokePath(path);
-        strokePath.width(t);
-        strokePath.line_cap(matherCapToAggCap(cap));
-
-        renderFilled(strokePath, color);
+        polyline(p, 4, t, cap, LineJoin::Mitter, color);
     }
 
-    void Context::drawPolyline(float *pos, int pointCount, float t, LineCap cap, LineJoin join, Color color)
+    void Context::polyline(float *pos, int pointCount, float t, LineCap cap, LineJoin join, Color color)
     {
         SimplePath path(pos, pointCount, false);
         agg::conv_stroke<SimplePath> strokePath(path);
@@ -80,56 +78,62 @@ namespace mather
         strokePath.line_join(matherJoinToAggJoin(join));
         strokePath.miter_limit(t);
 
-        renderFilled(strokePath, color);
+        solidDrawer.draw(strokePath, color);
     }
 
-    void Context::drawCircle(float x, float y, float r, Color color)
+    void Context::circle(float x, float y, float r, Color color)
     {
         agg::ellipse circle(x, y, r, r);
+        solidDrawer.draw(circle, color);
     }
 
-    void Context::drawCircleOutline(float x, float y, float r, float t, Color color)
-    {
-        agg::ellipse circle(x, y, r, r);
-
-        ras.reset();
-        ras.add_path(circle);
-        agg::render_scanlines_aa_solid(ras, scanline, renderer, color);
-    }
-
-    void Context::drawRect(float x, float y, float w, float h, Color color)
+    void Context::rect(float x, float y, float w, float h, Color color)
     {
         agg::rounded_rect rect(x, y, x + w, y - h, 0);
-        renderFilled(rect, color);
+        solidDrawer.draw(rect, color);
     }
 
-    void Context::drawRoundedRect(float x, float y, float w, float h, float r, Color color)
+    void Context::roundedRect(float x, float y, float w, float h, float r, Color color)
     {
         agg::rounded_rect rect(x, y, x + w, y - h, r);
-        renderFilled(rect, color);
+        solidDrawer.draw(rect, color);
     }
 
-    void Context::drawPolygon(float pos[], int pointCount, Color color)
+    void Context::polygon(float pos[], int pointCount, Color color)
     {
-        ras.auto_close(true);
         SimplePath path(pos, pointCount, false);
-        renderFilled(path, color);
-        ras.auto_close(false);
+        solidDrawer.draw(path, color, true);
     }
 
-    void Context::drawPolygonOutline(float *pos, int pointCount, float t, LineJoin join, Color color)
+    /// ****
+    /// Outlined Primitives
+    /// ****
+    void Context::circleOutline(float x, float y, float r, float t, Color color)
     {
-        SimplePath path(pos, pointCount, true);
-        agg::conv_stroke<SimplePath> strokePath(path);
-
-        strokePath.width(t);
-        strokePath.line_cap(agg::line_cap_e::butt_cap);
-        strokePath.line_join(matherJoinToAggJoin(join));
-        strokePath.miter_limit(t);
-
-        renderFilled(strokePath, color);
+        agg::ellipse circle(x, y, r, r);
+        outlineDrawer.draw(circle, color, t);
     }
 
+    void Context::rectOutline(float x, float y, float w, float h, float t, Color color)
+    {
+        agg::rounded_rect rect(x, y, x + w, y - h, 0);
+        outlineDrawer.draw(rect, color, t);
+    }
+
+    void Context::roundedRectOutline(float x, float y, float w, float h, float r, float t, Color color)
+    {
+        agg::rounded_rect rect(x, y, x + w, y - h, r);
+        outlineDrawer.draw(rect, color, t);
+    }
+    void Context::polygonOutline(float *pos, int pointCount, float t, Color color)
+    {
+        SimplePath path(pos, pointCount, false);
+        outlineDrawer.draw(path, color, t, true);
+    }
+
+    /// ****
+    /// UTILS
+    /// ****
     agg::line_cap_e Context::matherCapToAggCap(LineCap cap)
     {
         switch (cap)
@@ -159,17 +163,4 @@ namespace mather
 
         return agg::miter_join;
     }
-
-    void Context::setTransform(float xOffset, float yOffset, float rotation)
-    {
-        matrix.reset();
-        matrix.rotate(rotation);
-        matrix.translate(xOffset, yOffset);
-    }
-
-    void Context::resetTransform()
-    {
-        matrix.reset();
-    }
-
 } // namespace mather

@@ -1,22 +1,16 @@
 #ifndef MATHER_MATHER_HPP
 #define MATHER_MATHER_HPP
 
+#include "drawers.hpp"
+
 #define GL_SILENCE_DEPRECATION
 #include <GLFW/glfw3.h>
 #include <vector>
 
-#include "agg_math_stroke.h"
-#include "agg_trans_affine.h"
-#include <agg_pixfmt_rgb.h>
-#include <agg_pixfmt_rgba.h>
-#include <agg_rasterizer_scanline_aa.h>
-#include <agg_renderer_base.h>
-#include <agg_renderer_scanline.h>
-#include <agg_scanline_p.h>
-
-typedef agg::pixfmt_rgba32 PixelFormat;
-typedef agg::renderer_base<PixelFormat> RendererBaseType;
-typedef agg::rgba8 Color;
+#include <agg_math_stroke.h>
+#include <agg_trans_affine.h>
+typedef agg::rendering_buffer Buffer;
+typedef agg::trans_affine TransformMatrix;
 
 namespace mather
 {
@@ -42,18 +36,16 @@ namespace mather
 
         GLFWwindow *window{nullptr};
 
-        agg::rendering_buffer renderBuffer;
+        Buffer renderBuffer;
         PixelFormat pixelFormat;
-        RendererBaseType renderer;
-        agg::scanline_p8 scanline;
-        agg::rasterizer_scanline_aa<> ras;
+        BaseRenderer baseRenderer;
 
-        agg::trans_affine matrix;
+        SolidDrawer solidDrawer;
+        OutlineDrawer outlineDrawer;
 
-        unsigned char *buffer{nullptr};
+        TransformMatrix matrix;
 
-        void createWindow(const char *name);
-        template <class VertexSource> void renderFilled(VertexSource &vs, Color color);
+        unsigned char *internalBuffer{nullptr};
 
         static agg::line_cap_e matherCapToAggCap(LineCap cap);
         static agg::line_join_e matherJoinToAggJoin(LineJoin join);
@@ -72,27 +64,38 @@ namespace mather
 
         bool closeRequested();
 
-        void drawLine(float x0, float y0, float x1, float y1, float t, LineCap cap, Color color);
-        void drawPolyline(float pos[], int pointCount, float t, LineCap cap, LineJoin join, Color color);
+        void line(float x0, float y0, float x1, float y1, float t, LineCap cap, Color color);
+        void polyline(float pos[], int pointCount, float t, LineCap cap, LineJoin join, Color color);
+        void circle(float x, float y, float r, Color color);
+        void rect(float x, float y, float w, float h, Color color);
+        void roundedRect(float x, float y, float w, float h, float r, Color color);
+        void polygon(float pos[], int pointCount, Color color);
 
-        void drawCircle(float x, float y, float r, Color color);
-        void drawCircleOutline(float x, float y, float r, float t, Color color);
-
-        void drawRect(float x, float y, float w, float h, Color color);
-
-        void drawRoundedRect(float x, float y, float w, float h, float r, Color color);
-
-        void drawPolygon(float pos[], int pointCount, Color color);
-        void drawPolygonOutline(float pos[], int pointCount, float t, LineJoin join, Color color);
+        void circleOutline(float x, float y, float r, float t, Color color);
+        void rectOutline(float x, float y, float w, float h, float t, Color color);
+        void roundedRectOutline(float x, float y, float w, float h, float r, float t, Color color);
+        void polygonOutline(float pos[], int pointCount, float t, Color color);
     };
 
     namespace colors
     {
         static const Color transparent(0xff, 0xff, 0xff, 0x00);
-        static const Color white(0xff, 0xff, 0xff, 0xff);
-        static const Color red(0xff, 0x00, 0x00, 0xff);
-        static const Color green(0x00, 0xff, 0x00, 0xff);
-        static const Color blue(0x00, 0x00, 0xff, 0xff);
+        static const Color white(0xffffff);
+        static const Color red(0xff0000);
+        static const Color green(0x00ff00);
+        static const Color blue(0x0000ff);
+
+        static const Color yellow(0xffff00);
+        static const Color cyan(0x00ffff);
+        static const Color magenta(0xff00ff);
+
+        static const Color silver(0xc0c0c0);
+        static const Color gray(0x808080);
+        static const Color maroon(0x800000);
+        static const Color olive(0x808000);
+        static const Color purple(0x800080);
+        static const Color teal(0x008080);
+        static const Color navy(0x000080);
     } // namespace colors
 } // namespace mather
 
