@@ -3,6 +3,13 @@
 <p align="center">
     <img src="icon.jpg" alt="Logo" width="110" height="110">
     <br>Mather
+<div align="center">
+
+[![GitHub Actions](https://github.com/carbone13/mather/actions/workflows/cmake.yml/badge.svg)](https://github.com/carbone13/mather/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+</div>
+
 </h1>
   <p align="center">
     A library to draw 2D primitives shapes quickly and efficiently.
