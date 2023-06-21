@@ -16,7 +16,7 @@ else ()
     list(APPEND OS_DEPENDANT "-lGL -lGLU -lX11")
 endif ()
 
-add_library(mather include/mather.hpp include/path.hpp src/mather.cpp include/config.hpp include/drawers.hpp src/drawers.cpp)
+add_library(mather include/mather.hpp include/path.hpp src/mather.cpp include/drawers.hpp src/drawers.cpp)
 target_link_libraries(mather glfw agg ${OS_DEPENDANT})
 
 if (MATHER_BUILD_DEMO)
