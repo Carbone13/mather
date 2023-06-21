@@ -13,7 +13,7 @@ elseif (WIN32)
     list(APPEND OS_DEPENDANT "-lglu32 -lopengl32")
     set(CMAKE_EXE_LINKER_FLAGS "-std=gnu99 -static -static-libgcc -static-libstdc++ -mwindows")
 else ()
-    list(APPEND OS_DEPENDANT "-lGL -lGLU -lX11")
+    list(APPEND OS_DEPENDANT "-lGL -lGLEW -lGLU -lX11")
 endif ()
 
 add_library(mather include/mather.hpp include/path.hpp src/mather.cpp include/drawers.hpp src/drawers.cpp)
