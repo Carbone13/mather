@@ -25,7 +25,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev
+        sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev mesa-common-dev libglu1-mesa-dev freeglut3-dev libgl-dev
 
     - name: Git Sumbodule Update
       run: |
