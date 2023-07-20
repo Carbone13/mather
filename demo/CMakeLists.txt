@@ -9,5 +9,5 @@ else ()
     list(APPEND OS_DEPENDANT "-lGL -lGLU -lX11")
 endif ()
 
-add_executable(mather-demo demo/main.cpp demo/main.hpp)
+add_executable(mather-demo main.cpp main.hpp)
 target_link_libraries(mather-demo mather glfw ${OS_DEPENDANT})
