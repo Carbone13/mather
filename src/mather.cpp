@@ -4,7 +4,6 @@
 #include <agg_conv_stroke.h>
 #include <agg_ellipse.h>
 #include <agg_rounded_rect.h>
-#include <iostream>
 
 namespace mather
 {
@@ -12,11 +11,6 @@ namespace mather
     {
         this->width = width;
         this->height = height;
-
-        glfwInit();
-        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
-        window = glfwCreateWindow(width, height, name, nullptr, nullptr);
-        glfwMakeContextCurrent(window);
 
         internalBuffer = new unsigned char[width * height * PixelFormat::pix_width];
         renderBuffer.attach(internalBuffer, width, height, width * PixelFormat::pix_width);
@@ -41,29 +35,12 @@ namespace mather
         matrix.reset();
     }
 
-    void Context::beginFrame()
+    void Context::clear()
     {
-        glClear(GL_COLOR_BUFFER_BIT);
         baseRenderer.clear(backgroundColor);
         matrix.reset();
     }
 
-    void Context::endFrame()
-    {
-        glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, internalBuffer);
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
-    bool Context::closeRequested()
-    {
-        return glfwWindowShouldClose(window);
-    }
-
-    Context::~Context()
-    {
-        glfwTerminate();
-    }
 
     /// ****
     /// SOLID PRIMITIVES

@@ -3,8 +3,6 @@
 
 #include "drawers.hpp"
 
-#define GL_SILENCE_DEPRECATION
-#include <GLFW/glfw3.h>
 #include <vector>
 
 #include <agg_math_stroke.h>
@@ -33,8 +31,6 @@ namespace mather
         int width;
         int height;
 
-        GLFWwindow *window{nullptr};
-
         Buffer renderBuffer;
         PixelFormat pixelFormat;
         BaseRenderer baseRenderer;
@@ -51,17 +47,14 @@ namespace mather
 
       public:
         explicit Context(int width = 1280, int height = 720, const char *name = "Mather Application");
-        ~Context();
 
         Color backgroundColor;
 
+        unsigned char *getBuffer () { return internalBuffer; };
         void setTransform(float xOffset, float yOffset, float rotation);
         void resetTransform();
 
-        void beginFrame();
-        void endFrame();
-
-        bool closeRequested();
+        void clear();
 
         void line(float x0, float y0, float x1, float y1, float t, LineCap cap, Color color);
         void polyline(float pos[], int pointCount, float t, LineCap cap, LineJoin join, Color color);
