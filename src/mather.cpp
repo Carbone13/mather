@@ -43,7 +43,6 @@ namespace mather
 
     void Context::beginFrame()
     {
-        glViewport(0, 0, w, h);
         glClear(GL_COLOR_BUFFER_BIT);
         baseRenderer.clear(backgroundColor);
         matrix.reset();
