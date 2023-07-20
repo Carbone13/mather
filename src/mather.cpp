@@ -4,6 +4,7 @@
 #include <agg_conv_stroke.h>
 #include <agg_ellipse.h>
 #include <agg_rounded_rect.h>
+#include <iostream>
 
 namespace mather
 {
@@ -13,6 +14,7 @@ namespace mather
         this->height = height;
 
         glfwInit();
+        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
         window = glfwCreateWindow(width, height, name, nullptr, nullptr);
         glfwMakeContextCurrent(window);
 
@@ -41,6 +43,7 @@ namespace mather
 
     void Context::beginFrame()
     {
+        glViewport(0, 0, w, h);
         glClear(GL_COLOR_BUFFER_BIT);
         baseRenderer.clear(backgroundColor);
         matrix.reset();
