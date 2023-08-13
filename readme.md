@@ -56,33 +56,35 @@ target_link_libraries(your_project mather)
 
 ### Usage
 
+The code below demonstrate how to spawn the window and start a rendering loop
+
 ```cpp
 #include "mather.hpp"
 
 int main()
 {
-    mather::Context ctx = mather::Context(WIDTH, HEIGHT); // Create the context
-    
-    // your draw loop
+    mather::Context ctx = mather::Context();
+    while (!ctx.closeRequested())
     {
-        ctx.clear();
-        ctx.line(-620, -350, 620, 350, 3.0f, LineCap::Round, colors::white);
-        ctx.circle(550, -200, 100, colors::cyan);
-        ctx.roundedRect(700, 500, 80, 50, 10, colors::olive);
-        
-        // now draw with your favorite api
-        drawPixels(WIDTH, HEIGHT, ctx.getInternalBuffer()); 	
+        ctx.beginFrame();
+        // Here come your rendering code !
+        ctx.endFrame();
     }
-	
+
     return 0;
 }
 ```
 
+You don't need to use this loop at all, you can instead use your own one, just note that you need to surround any draw
+calls with `beginFrame()` and `endFrame()`
+
+The `closeRequested()` is set to `true` when the user click on the close button of the window.
+
+TODO : Support custom surface plugging
+
 ## Examples
 
-See [main.cpp](demo/main.cpp) in [demo](demo/) for an integration with GLFW and OpenGL.
-
-TODO Example with more backends
+See [main.cpp](demo/main.cpp) in [demo](demo/)
 
 ## Dependencies
 

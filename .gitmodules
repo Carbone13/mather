@@ -1,9 +1,9 @@
+[submodule "lib/glfw"]
+	path = lib/glfw
+	url = https://github.com/glfw/glfw
 [submodule "lib/agg-2.4"]
 	path = lib/agg-2.4
 	url = https://github.com/Carbone13/agg-2.4
 [submodule "lib/agg"]
 	path = lib/agg
 	url = https://github.com/carbone13/agg
-[submodule "demo/glfw"]
-	path = demo/glfw
-	url = https://github.com/glfw/glfw
